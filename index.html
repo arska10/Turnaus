@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnaus Sydeem</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1e1e1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+        .header {
+            text-align: center;
+            color: #f0f0f0;
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.1);
+        }
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .input-container textarea {
+            width: 300px;
+            height: 150px;
+            border-radius: 5px;
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            resize: none;
+            font-size: 16px;
+        }
+        .input-container select {
+            width: 320px;
+            margin-top: 10px;
+            padding: 10px;
+            font-size: 16px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-container select:hover {
+            background-color: #555;
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+        }
+        .input-container button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .input-container button:hover {
+            background-color: #555;
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+        }
+        .bracket {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+        .round {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .matchup {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .team {
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 8px 12px;
+            margin: 5px 0;
+            width: 180px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .team:hover {
+            background-color: #444;
+            box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
+        }
+        .winner {
+            background-color: #28a745;
+            color: #fff;
+            border: 1px solid #1e7e34;
+        }
+        .loser {
+            background-color: #dc3545;
+            color: #fff;
+            border: 1px solid #bd2130;
+        }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <div class="header">Tiimit</div>
+        <div class="input-container">
+            <textarea id="team-list" placeholder="Yksi tiimi per rivi"></textarea>
+            <select id="team-count">
+                <option value="128">128 Tiimit</option>
+                <option value="64">64 Tiimit</option>
+                <option value="32">32 Tiimit</option>
+                <option value="16" selected>16 Tiimit</option>
+                <option value="8">8 Tiimit</option>
+                <option value="4">4 Tiimit</option>
+                <option value="2">2 Tiimit</option>
+            </select>
+            <button onclick="confirmTeams()">Valmis</button>
+        </div>
+    </div>
+    <div id="bracket-container" style="display: none;">
+        <div class="header">Turnaus</div>
+        <div class="header">Tehnyt: Arska</div>
+        <div class="bracket" id="bracket"></div>
+    </div>
+
+    <script>
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        function confirmTeams() {
+            const teamInput = document.getElementById("team-list").value.trim();
+            const teamList = teamInput.split("\n").map(team => team.trim()).filter(team => team);
+            const teamCount = parseInt(document.getElementById("team-count").value);
+
+            if (teamList.length < teamCount) {
+                alert(`Enter at least ${teamCount} teams.`);
+                return;
+            }
+
+            const shuffledTeams = shuffleArray(teamList).slice(0, teamCount);
+
+            document.getElementById("setup").style.display = "none";
+            document.getElementById("bracket-container").style.display = "block";
+            generateBracket(shuffledTeams);
+        }
+
+        function generateBracket(teams) {
+            const bracketContainer = document.getElementById("bracket");
+            bracketContainer.innerHTML = "";
+
+            let currentRound = teams;
+            while (currentRound.length > 1) {
+                const roundDiv = document.createElement("div");
+                roundDiv.classList.add("round");
+
+                for (let i = 0; i < currentRound.length; i += 2) {
+                    const matchupDiv = document.createElement("div");
+                    matchupDiv.classList.add("matchup");
+
+                    const team1 = currentRound[i];
+                    const team2 = currentRound[i + 1];
+
+                    matchupDiv.innerHTML = `
+                        <div class="team default" onclick="advanceTeam(this)">${team1}</div>
+                        <div class="team default" onclick="advanceTeam(this)">${team2}</div>
+                    `;
+
+                    roundDiv.appendChild(matchupDiv);
+                }
+
+                bracketContainer.appendChild(roundDiv);
+
+                currentRound = Array.from({ length: currentRound.length / 2 }, () => "");
+            }
+        }
+
+        function advanceTeam(element) {
+            const currentRound = element.closest('.round');
+            const nextRound = currentRound.nextElementSibling;
+
+            if (!nextRound) {
+                declareWinner(element);
+                return;
+            }
+
+            const matchups = Array.from(currentRound.getElementsByClassName('matchup'));
+            const index = matchups.findIndex(matchup => matchup.contains(element));
+
+            const matchup = matchups[index];
+            const teams = matchup.getElementsByClassName('team');
+            Array.from(teams).forEach(team => {
+                if (team === element) {
+                    team.classList.add('winner');
+                    team.classList.remove('loser', 'default');
+                } else {
+                    team.classList.add('loser');
+                    team.classList.remove('winner', 'default');
+                }
+            });
+
+            const nextMatchup = nextRound.getElementsByClassName('matchup')[Math.floor(index / 2)];
+            const teamSlot = nextMatchup.getElementsByClassName('team')[index % 2];
+            teamSlot.textContent = element.textContent;
+            teamSlot.className = 'team default';
+        }
+
+        function declareWinner(winningElement) {
+            const finalMatchup = winningElement.closest('.matchup');
+            const teams = finalMatchup.getElementsByClassName('team');
+
+            Array.from(teams).forEach(team => {
+                if (team === winningElement) {
+                    team.classList.add('winner');
+                    team.classList.remove('default', 'loser');
+                } else {
+                    team.classList.add('loser');
+                    team.classList.remove('default', 'winner');
+                }
+            });
+
+            const winnerDisplay = document.createElement("div");
+            winnerDisplay.style.textAlign = "center";
+            winnerDisplay.style.marginTop = "20px";
+            winnerDisplay.style.fontSize = "30px";
+            winnerDisplay.style.fontWeight = "bold";
+            winnerDisplay.style.color = "#FFD700";
+            winnerDisplay.classList.add("winner-display");
+
+            winnerDisplay.innerHTML = `
+                👑🔥 <span style="color: #28a745; text-shadow: 0 0 10px #28a745;">${winningElement.textContent}</span> Voitti 🏆🔥👑
+            `;
+            document.getElementById("bracket-container").appendChild(winnerDisplay);
+        }
+    </script>
+</body>
+</html>
